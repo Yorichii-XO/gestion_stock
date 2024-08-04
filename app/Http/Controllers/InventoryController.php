@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Inventory;
 use Illuminate\Http\Request;
 
 class InventoryController extends Controller
@@ -11,53 +12,54 @@ class InventoryController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    // Get a list of all inventories
     public function index()
     {
-        //
+        return response()->json(Inventory::with('products')->get());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+    // Store a new inventory
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'location' => 'required|string|max:255',
+            'capacity' => 'required|integer',
+            'currentStock' => 'required|integer',
+        ]);
+
+        $inventory = Inventory::create($request->all());
+
+        return response()->json($inventory, 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+    // Show a specific inventory
     public function show($id)
     {
-        //
+        return response()->json(Inventory::with('products')->findOrFail($id));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+    // Update a specific inventory
     public function update(Request $request, $id)
     {
-        //
+        $inventory = Inventory::findOrFail($id);
+
+        $request->validate([
+            'location' => 'sometimes|string|max:255',
+            'capacity' => 'sometimes|integer',
+            'currentStock' => 'sometimes|integer',
+        ]);
+
+        $inventory->update($request->only(['location', 'capacity', 'currentStock']));
+
+        return response()->json($inventory);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+    // Delete a specific inventory
     public function destroy($id)
     {
-        //
+        $inventory = Inventory::findOrFail($id);
+        $inventory->delete();
+
+        return response()->json(null, 204);
     }
 }

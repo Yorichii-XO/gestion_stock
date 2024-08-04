@@ -21,11 +21,10 @@ class UserFactory extends Factory
     public function definition()
     {
         return [
-            'username' => $this->faker->unique()->userName,
-            'email' => $this->faker->unique()->safeEmail,
-            'password' => bcrypt('password'), // default password for testing
+            'name' => $this->faker->name(),
+            'email' => $this->faker->unique()->safeEmail(),
+            'password' => bcrypt('password'), // You can also use Hash::make('password')
             'remember_token' => Str::random(10),
-            'role_id' => \App\Models\Role::inRandomOrder()->first()->id,
         ];
     }
 

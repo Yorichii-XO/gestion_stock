@@ -29,6 +29,7 @@ Route::post('/logout', [RegisterController::class, 'logout'])->middleware('auth:
 Route::get('/users',[ApiController::class,'getUsers'] )->middleware('auth:sanctum');
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('products', ProductController::class);
+  
     Route::apiResource('categories', CategoryController::class);
     Route::apiResource('suppliers', SupplierController::class);
     Route::apiResource('clients', ClientController::class);

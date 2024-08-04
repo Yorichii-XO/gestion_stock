@@ -15,11 +15,12 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id(); // This will create an unsigned big integer column as primary key
-            $table->string('username')->unique();
+            $table->string('name');
             $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->enum('role', ['user'])->default('user');
             $table->rememberToken();
-            $table->foreignId('role_id')->constrained()->onDelete('cascade'); // Ensure roles table exists
             $table->timestamps();
         });
     }

@@ -11,25 +11,23 @@ class RegisterController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'username' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
-            'role_id' => 'required'
-           
+            'role' => 'nullable|string|in:user', // Optional and restricted to valid values
         ]);
 
         $user = User::create([
-            'username' => $request->name,
+            'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role_id' => $request->role
+            'role' => $request->role ?? 'user', // Use the default 'user' if not provided
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
+            'message' => "registerd successfully"
         ]);
     }
 
