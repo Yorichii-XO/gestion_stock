@@ -21,15 +21,27 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'customerId' => 'required|integer|exists:customers,id',
-            'userId' => 'required|integer|exists:users,id',
-            'totalPrice' => 'required|numeric',
-            'status' => 'required|string',
+            'client_id' => 'required|exists:clients,id',
+            'user_id' => 'required|exists:users,id',
+            'total_price' => 'required|numeric',
+            'status' => 'required|string'
         ]);
 
         $order = Order::create($request->all());
 
         return response()->json($order, 201);
+    }
+
+    public function update(Request $request, Order $order)
+    {
+        $request->validate([
+            'total_price' => 'sometimes|required|numeric',
+            'status' => 'sometimes|required|string'
+        ]);
+
+        $order->update($request->only(['total_price', 'status']));
+
+        return response()->json($order);
     }
 
     // Show a specific order
@@ -39,21 +51,7 @@ class OrderController extends Controller
     }
 
     // Update a specific order
-    public function update(Request $request, $id)
-    {
-        $order = Order::findOrFail($id);
-
-        $request->validate([
-            'customerId' => 'sometimes|integer|exists:customers,id',
-            'userId' => 'sometimes|integer|exists:users,id',
-            'totalPrice' => 'sometimes|numeric',
-            'status' => 'sometimes|string',
-        ]);
-
-        $order->update($request->only(['customerId', 'userId', 'totalPrice', 'status']));
-
-        return response()->json($order);
-    }
+   
 
     // Delete a specific order
     public function destroy($id)

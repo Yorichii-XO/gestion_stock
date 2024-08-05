@@ -14,4 +14,8 @@ class Category extends Model
     {
         return $this->hasMany(Product::class);
     }
+    public function getFormattedName()
+    {
+        return 'Category: ' . $this->name;
+    }
 }

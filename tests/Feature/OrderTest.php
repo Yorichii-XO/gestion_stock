@@ -1,90 +1,105 @@
 <?php
 
 namespace Tests\Feature;
-use App\Models\Order;
 
+use App\Models\Client;
+use App\Models\Order;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class OrderTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
     use RefreshDatabase;
 
-    public function test_can_create_order()
-    {
-        $response = $this->postJson('/api/orders', [
-            'client_id' => 1,
-            'user_id' => 1,
-            'total_price' => 100.00,
-            'status' => 'pending',
-        ]);
+    protected $user;
+    protected $client;
 
-        $response->assertStatus(201)
-                 ->assertJson([
-                     'client_id' => 1,
-                     'user_id' => 1,
-                     'total_price' => 100.00,
-                     'status' => 'pending',
-                 ]);
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->user = User::factory()->create();
+        $this->client = Client::factory()->create(); // Ensure there's a client
     }
 
-    public function test_can_get_all_orders()
+    public function test_it_can_list_orders()
     {
         Order::factory()->count(3)->create();
-
-        $response = $this->getJson('/api/orders');
-
-        $response->assertStatus(200)
-                 ->assertJsonCount(3);
+        $response = $this->actingAs($this->user, 'sanctum')->getJson('/api/orders');
+        $response->assertStatus(200)->assertJsonCount(3);
     }
-
-    public function test_can_get_single_order()
+    public function test_it_can_store_a_new_order()
     {
-        $order = Order::factory()->create();
-
-        $response = $this->getJson("/api/orders/{$order->id}");
-
-        $response->assertStatus(200)
+        $response = $this->actingAs($this->user, 'sanctum')->postJson('/api/orders', [
+            'client_id' => $this->client->id,
+            'user_id' => $this->user->id,
+            'total_price' => 250.00,
+            'status' => 'pending'
+        ]);
+    
+        $response->assertStatus(201)
                  ->assertJson([
-                     'client_id' => $order->client_id,
-                     'user_id' => $order->user_id,
-                     'total_price' => $order->total_price,
-                     'status' => $order->status,
+                     'client_id' => $this->client->id,
+                     'user_id' => $this->user->id,
+                     'total_price' => 250.00,
+                     'status' => 'pending'
                  ]);
+        
+        $this->assertDatabaseHas('orders', [
+            'client_id' => $this->client->id,
+            'user_id' => $this->user->id,
+            'total_price' => 250.00,
+            'status' => 'pending'
+        ]);
+    }
+    
+
+    public function test_it_can_show_an_order()
+    {
+        $order = Order::factory()->create([
+            'client_id' => $this->client->id,
+            'user_id' => $this->user->id
+        ]);
+
+        $response = $this->actingAs($this->user, 'sanctum')->getJson('/api/orders/' . $order->id);
+        $response->assertStatus(200)->assertJson([
+            'client_id' => $order->client_id,
+            'user_id' => $order->user_id,
+            'total_price' => $order->total_price,
+            'status' => $order->status
+        ]);
     }
 
-    public function test_can_update_order()
+    public function test_it_can_update_an_order()
     {
-        $order = Order::factory()->create();
+        $order = Order::factory()->create([
+            'client_id' => $this->client->id,
+            'user_id' => $this->user->id,
+            'total_price' => 100.00,
+            'status' => 'pending'
+        ]);
 
-        $response = $this->putJson("/api/orders/{$order->id}", [
+        $response = $this->actingAs($this->user, 'sanctum')->putJson('/api/orders/' . $order->id, [
             'total_price' => 150.00,
-            'status' => 'completed',
+            'status' => 'completed'
         ]);
 
-        $response->assertStatus(200)
-                 ->assertJson([
-                     'total_price' => 150.00,
-                     'status' => 'completed',
-                 ]);
+        $response->assertStatus(200)->assertJson([
+            'total_price' => 150.00,
+            'status' => 'completed'
+        ]);
     }
 
-    public function test_can_delete_order()
+    public function test_it_can_delete_an_order()
     {
-        $order = Order::factory()->create();
-
-        $response = $this->deleteJson("/api/orders/{$order->id}");
-
-        $response->assertStatus(204);
-
-        $this->assertDatabaseMissing('orders', [
-            'id' => $order->id,
+        $order = Order::factory()->create([
+            'client_id' => $this->client->id,
+            'user_id' => $this->user->id
         ]);
+
+        $response = $this->actingAs($this->user, 'sanctum')->deleteJson('/api/orders/' . $order->id);
+        $response->assertStatus(204);
+        $this->assertDatabaseMissing('orders', ['id' => $order->id]);
     }
 }

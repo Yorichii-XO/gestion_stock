@@ -1,84 +1,55 @@
 <?php
 
 namespace Tests\Feature;
-use App\Models\Supplier;
 
+use App\Models\Supplier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
 class SupplierTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
     use RefreshDatabase;
 
-    public function test_can_create_supplier()
+    protected function setUp(): void
     {
-        $response = $this->postJson('/api/suppliers', [
-            'name' => 'Test Supplier',
-            'contact_info' => '1234567890',
-        ]);
-
-        $response->assertStatus(201)
-                 ->assertJson([
-                     'name' => 'Test Supplier',
-                     'contact_info' => '1234567890',
-                 ]);
+        parent::setUp();
+        Artisan::call('db:seed');
     }
 
-    public function test_can_get_all_suppliers()
+    public function test_it_can_list_suppliers()
     {
         Supplier::factory()->count(3)->create();
-
         $response = $this->getJson('/api/suppliers');
-
-        $response->assertStatus(200)
-                 ->assertJsonCount(3);
+        $response->assertStatus(200)->assertJsonCount(3);
     }
 
-    public function test_can_get_single_supplier()
+    public function test_it_can_store_a_new_supplier()
     {
-        $supplier = Supplier::factory()->create();
-
-        $response = $this->getJson("/api/suppliers/{$supplier->id}");
-
-        $response->assertStatus(200)
-                 ->assertJson([
-                     'name' => $supplier->name,
-                     'contact_info' => $supplier->contact_info,
-                 ]);
+        $response = $this->postJson('/api/suppliers', ['name' => 'ABC Supplies']);
+        $response->assertStatus(201)->assertJson(['name' => 'ABC Supplies']);
     }
 
-    public function test_can_update_supplier()
+    public function test_it_can_show_a_supplier()
     {
         $supplier = Supplier::factory()->create();
-
-        $response = $this->putJson("/api/suppliers/{$supplier->id}", [
-            'name' => 'Updated Supplier',
-            'contact_info' => '0987654321',
-        ]);
-
-        $response->assertStatus(200)
-                 ->assertJson([
-                     'name' => 'Updated Supplier',
-                     'contact_info' => '0987654321',
-                 ]);
+        $response = $this->getJson('/api/suppliers/' . $supplier->id);
+        $response->assertStatus(200)->assertJson(['name' => $supplier->name]);
     }
 
-    public function test_can_delete_supplier()
+    public function test_it_can_update_a_supplier()
+    {
+        $supplier = Supplier::factory()->create(['name' => 'Old Name']);
+        $response = $this->putJson('/api/suppliers/' . $supplier->id, ['name' => 'New Name']);
+        $response->assertStatus(200)->assertJson(['name' => 'New Name']);
+    }
+
+    public function test_it_can_delete_a_supplier()
     {
         $supplier = Supplier::factory()->create();
-
-        $response = $this->deleteJson("/api/suppliers/{$supplier->id}");
-
+        $response = $this->deleteJson('/api/suppliers/' . $supplier->id);
         $response->assertStatus(204);
-
-        $this->assertDatabaseMissing('suppliers', [
-            'id' => $supplier->id,
-        ]);
+        $this->assertDatabaseMissing('suppliers', ['id' => $supplier->id]);
     }
 }

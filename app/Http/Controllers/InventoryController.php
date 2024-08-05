@@ -7,59 +7,47 @@ use Illuminate\Http\Request;
 
 class InventoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    // Get a list of all inventories
     public function index()
     {
-        return response()->json(Inventory::with('products')->get());
+        return response()->json(Inventory::all());
     }
 
-    // Store a new inventory
+    public function show($id)
+    {
+        return Inventory::findOrFail($id);
+    }
+
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'location' => 'required|string|max:255',
             'capacity' => 'required|integer',
-            'currentStock' => 'required|integer',
+            'current_stock' => 'required|integer',
+            'product_id' => 'required|exists:products,id',
         ]);
 
-        $inventory = Inventory::create($request->all());
-
+        $inventory = Inventory::create($validated);
         return response()->json($inventory, 201);
     }
 
-    // Show a specific inventory
-    public function show($id)
-    {
-        return response()->json(Inventory::with('products')->findOrFail($id));
-    }
-
-    // Update a specific inventory
     public function update(Request $request, $id)
     {
-        $inventory = Inventory::findOrFail($id);
-
-        $request->validate([
-            'location' => 'sometimes|string|max:255',
-            'capacity' => 'sometimes|integer',
-            'currentStock' => 'sometimes|integer',
+        $validated = $request->validate([
+            'location' => 'sometimes|required|string|max:255',
+            'capacity' => 'sometimes|required|integer',
+            'current_stock' => 'sometimes|required|integer',
+            'product_id' => 'sometimes|required|exists:products,id',
         ]);
 
-        $inventory->update($request->only(['location', 'capacity', 'currentStock']));
-
-        return response()->json($inventory);
+        $inventory = Inventory::findOrFail($id);
+        $inventory->update($validated);
+        return response()->json($inventory, 200);
     }
 
-    // Delete a specific inventory
     public function destroy($id)
     {
         $inventory = Inventory::findOrFail($id);
         $inventory->delete();
-
         return response()->json(null, 204);
     }
 }

@@ -9,46 +9,48 @@ class ProductController extends Controller
 {
     public function index()
     {
-        return Product::all();
+        return response()->json(Product::all());
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string',
             'category_id' => 'required|exists:categories,id',
             'supplier_id' => 'required|exists:suppliers,id',
             'quantity' => 'required|integer',
-            'price' => 'required|numeric',
+            'price' => 'required|numeric'
         ]);
 
-        return Product::create($request->all());
+        $product = Product::create($request->all());
+
+        return response()->json($product, 201);
     }
 
     public function show(Product $product)
     {
-        return $product;
+        return response()->json($product);
     }
 
     public function update(Request $request, Product $product)
     {
         $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'category_id' => 'sometimes|exists:categories,id',
-            'supplier_id' => 'sometimes|exists:suppliers,id',
-            'quantity' => 'sometimes|integer',
-            'price' => 'sometimes|numeric',
+            'name' => 'sometimes|required|string',
+            'category_id' => 'sometimes|required|exists:categories,id',
+            'supplier_id' => 'sometimes|required|exists:suppliers,id',
+            'quantity' => 'sometimes|required|integer',
+            'price' => 'sometimes|required|numeric'
         ]);
 
-        $product->update($request->all());
+        $product->update($request->only(['name', 'category_id', 'supplier_id', 'quantity', 'price']));
 
-        return $product;
+        return response()->json($product);
     }
 
     public function destroy(Product $product)
     {
         $product->delete();
 
-        return response()->noContent();
+        return response()->json(null, 204);
     }
 }
