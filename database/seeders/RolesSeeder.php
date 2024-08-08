@@ -2,10 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Role;
-class RoleSeeder extends Seeder
+
+class RolesSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -15,5 +16,9 @@ class RoleSeeder extends Seeder
     public function run()
     {
         Role::factory()->count(5)->create();
+
+        // Create default roles
+        // Role::create(['name' => 'admin']);
+        // Role::create(['name' => 'user']);
     }
 }

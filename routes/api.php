@@ -9,7 +9,9 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\OrderItemController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\RoleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +37,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('clients', ClientController::class);
     Route::apiResource('orders', OrderController::class);
     Route::apiResource('inventories', InventoryController::class);
+    Route::apiResource('order-items', OrderItemController::class);
+    Route::apiResource('roles', RoleController::class);
 
     Route::post('logout', [ApiController::class, 'logout']);
 });

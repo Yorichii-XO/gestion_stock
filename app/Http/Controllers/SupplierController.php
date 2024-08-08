@@ -2,62 +2,51 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Supplier;
 use Illuminate\Http\Request;
 
 class SupplierController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
-        //
+        $suppliers = Supplier::with('products')->get();
+        return response()->json($suppliers);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string',
+            'contact_info' => 'required|string'
+        ]);
+
+        $supplier = Supplier::create($request->all());
+
+        return response()->json($supplier, 201);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
+    public function show(Supplier $supplier)
     {
-        //
+        $supplier->load('products');
+        return response()->json($supplier);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
+    public function update(Request $request, Supplier $supplier)
     {
-        //
+        $request->validate([
+            'name' => 'sometimes|required|string',
+            'contact_info' => 'sometimes|required|string'
+        ]);
+
+        $supplier->update($request->only(['name', 'contact_info']));
+
+        return response()->json($supplier);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
+    public function destroy(Supplier $supplier)
     {
-        //
+        $supplier->delete();
+
+        return response()->json(null, 204);
     }
 }

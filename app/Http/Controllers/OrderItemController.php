@@ -7,18 +7,16 @@ use Illuminate\Http\Request;
 
 class OrderItemController extends Controller
 {
-    // Get a list of all order items
     public function index()
     {
         return response()->json(OrderItem::all());
     }
 
-    // Store a new order item
     public function store(Request $request)
     {
         $request->validate([
-            'orderId' => 'required|integer|exists:orders,id',
-            'productId' => 'required|integer|exists:products,id',
+            'order_id' => 'required|exists:orders,id',
+            'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer',
             'price' => 'required|numeric',
         ]);
@@ -28,33 +26,27 @@ class OrderItemController extends Controller
         return response()->json($orderItem, 201);
     }
 
-    // Show a specific order item
-    public function show($id)
+    public function show(OrderItem $orderItem)
     {
-        return response()->json(OrderItem::findOrFail($id));
+        return response()->json($orderItem);
     }
 
-    // Update a specific order item
-    public function update(Request $request, $id)
+    public function update(Request $request, OrderItem $orderItem)
     {
-        $orderItem = OrderItem::findOrFail($id);
-
         $request->validate([
-            'orderId' => 'sometimes|integer|exists:orders,id',
-            'productId' => 'sometimes|integer|exists:products,id',
-            'quantity' => 'sometimes|integer',
-            'price' => 'sometimes|numeric',
+            'order_id' => 'sometimes|required|exists:orders,id',
+            'product_id' => 'sometimes|required|exists:products,id',
+            'quantity' => 'sometimes|required|integer',
+            'price' => 'sometimes|required|numeric',
         ]);
 
-        $orderItem->update($request->only(['orderId', 'productId', 'quantity', 'price']));
+        $orderItem->update($request->only(['order_id', 'product_id', 'quantity', 'price']));
 
         return response()->json($orderItem);
     }
 
-    // Delete a specific order item
-    public function destroy($id)
+    public function destroy(OrderItem $orderItem)
     {
-        $orderItem = OrderItem::findOrFail($id);
         $orderItem->delete();
 
         return response()->json(null, 204);
